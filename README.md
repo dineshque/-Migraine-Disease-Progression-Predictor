@@ -14,7 +14,6 @@ Machine learning application that predicts migraine episodes using temporal patt
 ```bash
 git clone https://github.com/dineshque/-Migraine-Disease-Progression-Predictor.git
 cd -Migraine-Disease-Progression-Predictor
-pip install -r requirements.txt
 streamlit run app.py
 ```
 
