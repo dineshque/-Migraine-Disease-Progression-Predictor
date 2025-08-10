@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emakia - AI Powered Toxicity Detection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow: hidden;
+        }
+
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            padding: 60px;
+            position: relative;
+            background: white;
+            animation: slideIn 0.5s ease-in-out;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .slide-number {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #2d3748;
+        }
+
+        h3 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #4a5568;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #666;
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .team-info {
+            position: absolute;
+            bottom: 60px;
+            right: 60px;
+            text-align: right;
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .inspiration-content {
+            display: flex;
+            align-items: center;
+            gap: 50px;
+        }
+
+        .inspiration-text {
+            flex: 1;
+            font-size: 1.3rem;
+            line-height: 1.8;
+            color: #4a5568;
+        }
+
+        .inspiration-visual {
+            flex: 1;
+            text-align: center;
+        }
+
+        .shield-icon {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 4rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .comparison-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin: 30px 0;
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .table-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.3s ease;
+        }
+
+        .table-row:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .table-row:last-child {
+            border-bottom: none;
+        }
+
+        .accuracy-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .accuracy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .slide-indicators {
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .indicator.active {
+            background: #667eea;
+            transform: scale(1.3);
+        }
+
+        .code-block {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 25px;
+            border-radius: 10px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            padding: 20px;
+            border-left: 4px solid #667eea;
+            border-radius: 0 10px 10px 0;
+            margin: 20px 0;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .benefit-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .benefit-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .thank-you-slide {
+            text-align: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .thank-you-slide h1 {
+            color: white;
+            font-size: 4rem;
+            margin-bottom: 30px;
+        }
+
+        .thank-you-slide .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <div class="slide-header">
+                <div class="logo">Emakia</div>
+                <div class="slide-number">1 / 7</div>
+            </div>
+            <div class="content">
+                <h1>Emakia Project</h1>
+                <div class="subtitle">AI Powered Toxicity & Fake News Detection</div>
+                <div class="highlight">
+                    <p style="font-size: 1.2rem; line-height: 1.6;">Combating online harassment through advanced AI models to protect marginalized communities and ensure safe digital spaces.</p>
+                </div>
+            </div>
+            <div class="team-info">
+                <strong>Team:</strong><br>
+                Corinne David • Yoko Lu • Dinesh Kumar • Aoi Minamoto
+            </div>
+        </div>
+
+        <!-- Slide 2: Inspiration -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo">Emakia</div>
+                <div class="slide-number">2 / 7</div>
+            </div>
+            <div class="content">
+                <h2>Inspiration</h2>
+                <div class="inspiration-content">
+                    <div class="inspiration-text">
+                        <p>Emakia was inspired by the pressing need to combat online harassment and its detrimental effects on marginalized communities like women, people of color, and LGBTQI+ individuals.</p>
+                        <br>
+                        <p><strong>Our Mission:</strong> Addressing these challenges helps protect mental wellbeing and ensures freedom of expression in the digital space.</p>
+                        <br>
+                        <p style="font-style: italic; color: #667eea;">Source: Anti-Defamatory League (ADL) organization 2023</p>
+                    </div>
+                    <div class="inspiration-visual">
+                        <div class="shield-icon">🛡️</div>
+                        <p style="margin-top: 20px; font-weight: 600; color: #667eea;">Protecting Digital Communities</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Performance Analysis -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo">Emakia</div>
+                <div class="slide-number">3 / 7</div>
+            </div>
+            <div class="content">
+                <h2>Performance Analysis</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">31.50%</div>
+                        <div class="stat-label">True Positive (TP)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">41.68%</div>
+                        <div class="stat-label">True Negative (TN)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">2.12%</div>
+                        <div class="stat-label">False Positive (FP)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">24.68%</div>
+                        <div class="stat-label">False Negative (FN)</div>
+                    </div>
+                </div>
+                <div class="highlight">
+                    <h3>Overall Accuracy: 73.18%</h3>
+                    <p>26.8% mislabeled or not predicted correctly</p>
+                </div>
+                <div style="margin-top: 30px;">
+                    <h3>Analysis of Mislabeling</h3>
+                    <p><strong>False Positive (FP):</strong> Positive predictions with Original content 0 (harassing)</p>
+                    <p><strong>False Negative (FN):</strong> Negative predictions with Original content 1 (positive)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: API Call and Error Handling -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo">Emakia</div>
+                <div class="slide-number">4 / 7</div>
+            </div>
+            <div class="content">
+                <h2>API Call and Error Handling</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+                    <div>
+                        <h3>Inside the try Block:</h3>
+                        <ul style="font-size: 1.1rem; line-height: 2; color: #4a5568; margin-left: 20px;">
+                            <li>Attempts to make an API call with the specified model and content</li>
+                            <li>Returns the response content if successful</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Inside the except Block:</h3>
+                        <ul style="font-size: 1.1rem; line-height: 2; color: #4a5568; margin-left: 20px;">
+                            <li>Prints the error message and current attempt number</li>
+                            <li>Waits for the specified delay time before retrying</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="code-block">
+try:
+    response = api_call(model, content)
+    return response.content
+except Exception as e:
+    print(f"Error on attempt {attempt}: {e}")
+    if attempt < max_retries:
+        time.sleep(delay)
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Transformer Model -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo">Emakia</div>
+                <div class="slide-number">5 / 7</div>
+            </div>
+            <div class="content">
+                <h2>Transformer Model</h2>
+                <div class="highlight">
+                    <p><strong>Repository:</strong> https://github.com/Emakia-Project/emakia/tree/main/LLM-RAG-Toxicity-Evaluator/transformer-llama</p>
+                </div>
+                <div class="benefits-grid">
+                    <div class="benefit-card">
+                        <div class="benefit-title">Customizability</div>
+                        <p>Full control over model architecture, layers, attention mechanisms, and fine-tuning on specific datasets.</p>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-title">Flexibility</div>
+                        <p>Handle a wide range of NLP tasks, from text generation to sentiment analysis and toxicity detection.</p>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-title">State-of-the-Art Performance</div>
+                        <p>Leverage self-attention mechanisms to capture long-range dependencies effectively.</p>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-title">Open Source</div>
+                        <p>Built on open source Transformer models with pre-trained versions, allowing you to build on existing work.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Model Comparison -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="logo">Emakia</div>
+                <div class="slide-number">6 / 7</div>
+            </div>
+            <div class="content">
+                <h2>Comparing LLM Accuracy</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #4a5568;">
+                    <strong>Dataset:</strong> 1,662 total rows processed<br>
+                    <strong>Focus:</strong> Predictions on content containing toxic terms
+                </p>
+                <div class="comparison-table">
+                    <div class="table-header">
+                        <div>LLM Model</div>
+                        <div>Accuracy (%)</div>
+                    </div>
+                    <div class="table-row">
+                        <div style="font-weight: 600;">LLaMA</div>
+                        <div>
+                            51.62%
+                            <div class="accuracy-bar">
+                                <div class="accuracy-fill" style="width: 51.62%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-row">
+                        <div style="font-weight: 600;">Gemini</div>
+                        <div>
+                            49.64%
+                            <div class="accuracy-bar">
+                                <div class="accuracy-fill" style="width: 49.64%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-row">
+                        <div style="font-weight: 600;">Grok</div>
+                        <div>
+                            27.80%
+                            <div class="accuracy-bar">
+                                <div class="accuracy-fill" style="width: 27.80%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-row">
+                        <div style="font-weight: 600;">DeepSeek</div>
+                        <div>
+                            0.24%
+                            <div class="accuracy-bar">
+                                <div class="accuracy-fill" style="width: 0.24%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-row">
+                        <div style="font-weight: 600;">OpenAI</div>
+                        <div>
+                            0.00%
+                            <div class="accuracy-bar">
+                                <div class="accuracy-fill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Thank You -->
+        <div class="slide thank-you-slide">
+            <div class="content">
+                <h1>Thank You</h1>
+                <div class="subtitle">Questions & Discussion</div>
+                <div style="margin-top: 50px; font-size: 1.2rem;">
+                    <p>Emakia Project Team</p>
+                    <p style="margin-top: 20px; opacity: 0.8;">AI Dev Summit 2025</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <!-- <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">Previous</button>
+        <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">Next</button>
+    </div> -->
+
+    <!-- Slide Indicators -->
+    <div class="slide-indicators">
+        <div class="indicator active" onclick="goToSlide(0)"></div>
+        <div class="indicator" onclick="goToSlide(1)"></div>
+        <div class="indicator" onclick="goToSlide(2)"></div>
+        <div class="indicator" onclick="goToSlide(3)"></div>
+        <div class="indicator" onclick="goToSlide(4)"></div>
+        <div class="indicator" onclick="goToSlide(5)"></div>
+        <div class="indicator" onclick="goToSlide(6)"></div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const indicators = document.querySelectorAll('.indicator');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            indicators[currentSlide].classList.remove('active');
+            
+            currentSlide = (n + totalSlides) % totalSlides;
+            
+            slides[currentSlide].classList.add('active');
+            indicators[currentSlide].classList.add('active');
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            if (direction === 1 && currentSlide < totalSlides - 1) {
+                showSlide(currentSlide + 1);
+            } else if (direction === -1 && currentSlide > 0) {
+                showSlide(currentSlide - 1);
+            }
+        }
+
+        function goToSlide(n) {
+            showSlide(n);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                changeSlide(1);
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                changeSlide(-1);
+            }
+        });
+
+        // Initialize
+        showSlide(0);
+
+        // Animate accuracy bars when slide 6 is shown
+        function animateAccuracyBars() {
+            const fills = document.querySelectorAll('.accuracy-fill');
+            fills.forEach((fill, index) => {
+                setTimeout(() => {
+                    fill.style.width = fill.style.width;
+                }, index * 200);
+            });
+        }
+
+        // Trigger animations when appropriate slide is shown
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.target.classList.contains('active') && 
+                    mutation.target.querySelector('.comparison-table')) {
+                    setTimeout(animateAccuracyBars, 500);
+                }
+            });
+        });
+
+        slides.forEach(slide => {
+            observer.observe(slide, { attributes: true, attributeFilter: ['class'] });
+        });
+    </script>
+</body>
+</html>
