@@ -42,3 +42,5 @@ plotly>=5.15.0
 2. Analyze temporal patterns and risk factors
 3. Train and compare ML models
 4. Generate predictions and personalized insights
+
+Open for Collaboration
